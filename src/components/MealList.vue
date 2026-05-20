@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import type {Macronutrient, MealEntry} from "@/types/meal";
-const meals = ref<MealEntry[]>([
-  {name: "Cheeseburger", macro: {countCarbs: 50, countFat: 10, countProteins: 5}},
-  {name: "Pizza", macro: {countCarbs : 100, countFat: 20, countProteins: 10}},
-  {name: "Pasta", macro: {countCarbs: 120, countFat: 50, countProteins: 10}}
-])
+import {getAllMeals} from "@/services/mealService";
+
+const meals = ref<MealEntry[]>([])
+const isLoading = ref(true)
+const errorMessage = ref<string | null>(null)
+
+onMounted(async() => {
+  try {
+    meals.value = await getAllMeals()
+  } catch (error) {
+    errorMessage.value = "Error while loading meals."
+    console.error(error)
+  }finally {
+    isLoading.value = false
+  }
+})
 
 function calculateCalories(macro: Macronutrient): number{
   return macro.countFat * 9 + macro.countProteins * 4 + macro.countCarbs * 4
@@ -15,7 +26,10 @@ function calculateCalories(macro: Macronutrient): number{
 <template>
 <div>
   <h2>Meine Mahlzeiten</h2>
-  <ul> <li v-for="meal in meals" :key="meal.name">
+  <p v-if="isLoading">Lade Mahlzeiten...</p>
+  <p v-else-if="errorMessage">{{ errorMessage }}</p>
+  <ul v-else>
+    <li v-for="meal in meals" :key="meal.name">
     <h3>{{ meal.name}}</h3>
     <p>Kohlenhydrate: {{ meal.macro.countCarbs}} g</p>
     <p>Fette: {{ meal.macro.countFat}} g</p>
