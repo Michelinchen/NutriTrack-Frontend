@@ -4,6 +4,7 @@ export interface Macronutrient {
   countFat: number
 }
 export interface MealEntry {
+  id?: number
   name: string,
   macro: Macronutrient
 }
