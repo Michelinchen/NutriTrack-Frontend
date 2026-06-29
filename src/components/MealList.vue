@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import type {Macronutrient, MealEntry} from "@/types/meal";
-import {getAllMeals, createMeal} from "@/services/mealService";
+import {getAllMeals, createMeal, deleteMeal} from "@/services/mealService";
 
 const meals = ref<MealEntry[]>([])
 const isLoading = ref(true)
@@ -49,6 +49,18 @@ async function submitForm() {
   }
 }
 
+async function onDelete(meal: MealEntry){
+  if(!meal.id) return
+  if(!confirm("Wirklich löschen?")) return
+  try {
+    await deleteMeal(meal.id)
+    await loadMeals()
+  } catch (error) {
+    errorMessage.value = "Fehler beim Löschen."
+    console.error(error)
+  }
+}
+
 function calculateCalories(macro: Macronutrient): number{
   return macro.countFat * 9 + macro.countProteins * 4 + macro.countCarbs * 4
 }
@@ -78,6 +90,7 @@ onMounted(loadMeals)
     <p>Fette: {{ meal.macro.countFat}} g</p>
     <p>Proteine: {{ meal.macro.countProteins}} g</p>
     <p>Kalorien: {{ calculateCalories(meal.macro) }} kcal</p>
+    <button @click="onDelete(meal)" type="button">Löschen</button>
   </li>
   </ul>
 </div>
