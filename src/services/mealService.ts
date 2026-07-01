@@ -16,3 +16,8 @@ export async function createMeal(meal: Omit<MealEntry, "id">): Promise<MealEntry
 export async function deleteMeal(id: number): Promise<void> {
   await axios.delete(`${API_BASE_URL}/meals/${id}`)
 }
+
+export async function updateMeal(id: number, meal: MealEntry): Promise<MealEntry>{
+  const response = await axios.put<MealEntry>(`${API_BASE_URL}/meals/${id}`, meal)
+  return response.data
+}

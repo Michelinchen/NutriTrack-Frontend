@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import {ref, onMounted, computed} from "vue";
 import type {Macronutrient, MealEntry} from "@/types/meal";
-import {getAllMeals, createMeal, deleteMeal} from "@/services/mealService";
+import {getAllMeals, createMeal, deleteMeal, updateMeal} from "@/services/mealService";
 
 const meals = ref<MealEntry[]>([])
 const isLoading = ref(true)
@@ -12,7 +12,13 @@ const newName= ref("")
 const newCarbs = ref(0)
 const newFat = ref(0)
 const newProteins = ref(0)
-
+const editingMealId = ref<number | null>(null)
+const searchText = ref("")
+const filteredMeals = computed(() =>
+  meals.value.filter(meal =>
+    meal.name.toLowerCase().includes(searchText.value.toLowerCase())
+  )
+)
 async function loadMeals(){
   isLoading.value = true
   try {
@@ -28,22 +34,22 @@ async function loadMeals(){
 async function submitForm() {
   if (!newName.value) return
   try {
-    await createMeal({
+    const mealData = {
       name: newName.value,
       macro: {
         countCarbs: newCarbs.value,
         countFat: newFat.value,
-        countProteins: newProteins.value,
-      },
-    })
-    // Form zurücksetzen
-    newName.value = ""
-    newCarbs.value = 0
-    newFat.value = 0
-    newProteins.value = 0
-    // Liste neu laden
+        countProteins: newProteins.value
+      }
+    }
+    if (editingMealId.value !== null) {
+      await updateMeal(editingMealId.value, mealData)
+    } else {
+      await createMeal(mealData)
+    }
+    resetForm()
     await loadMeals()
-  } catch (error) {
+  }catch (error) {
     errorMessage.value = "Fehler beim Speichern."
     console.error(error)
   }
@@ -61,6 +67,32 @@ async function onDelete(meal: MealEntry){
   }
 }
 
+async function onEdit(meal: MealEntry){
+  editingMealId.value = meal.id ?? null
+  newName.value = meal.name
+  newFat.value = meal.macro.countFat
+  newCarbs.value = meal.macro.countCarbs
+  newProteins.value = meal.macro.countProteins
+}
+
+function resetForm(){
+  editingMealId.value = null
+  newName.value = ""
+  newCarbs.value = 0
+  newFat.value = 0
+  newProteins.value = 0
+}
+
+async function onToggleFavorite(meal: MealEntry){
+  if(!meal.id) return
+  try {
+    await updateMeal(meal.id, {...meal, favorite: !meal.favorite})
+    await loadMeals()
+  } catch (error) {
+    errorMessage.value = "Fehler beim Aktualisieren des Favoriten-Status."
+    console.error(error)
+  }
+}
 function calculateCalories(macro: Macronutrient): number{
   return macro.countFat * 9 + macro.countProteins * 4 + macro.countCarbs * 4
 }
@@ -78,20 +110,31 @@ onMounted(loadMeals)
     <input v-model.number="newCarbs" type="number" placeholder="Kohlenhydrate (g)" />
     <input v-model.number="newFat" type="number" placeholder="Fett (g)" />
     <input v-model.number="newProteins" type="number" placeholder="Proteine (g)" />
-    <button type="submit">Speichern</button>
+    <button type="submit">
+      {{editingMealId !== null ? "Aktualisieren" : "Speichern"}}
+    </button>
+    <button v-if="editingMealId !== null"
+            type="button"
+            @click="resetForm">
+      Abbrechen
+    </button>
   </form>
+
+  <input v-model="searchText" placeholder="Suchen..." />
 
   <p v-if="isLoading">Lade Mahlzeiten...</p>
   <p v-else-if="errorMessage">{{ errorMessage }}</p>
   <ul v-else>
-    <li v-for="meal in meals" :key="meal.id ?? meal.name">
-    <h3>{{ meal.name}}</h3>
-    <p>Kohlenhydrate: {{ meal.macro.countCarbs}} g</p>
-    <p>Fette: {{ meal.macro.countFat}} g</p>
-    <p>Proteine: {{ meal.macro.countProteins}} g</p>
-    <p>Kalorien: {{ calculateCalories(meal.macro) }} kcal</p>
-    <button @click="onDelete(meal)" type="button">Löschen</button>
-  </li>
+    <li v-for="meal in filteredMeals" :key="meal.id ?? meal.name">
+      <h3>{{ meal.name}}</h3>
+      <p>Kohlenhydrate: {{ meal.macro.countCarbs}} g</p>
+      <p>Fette: {{ meal.macro.countFat}} g</p>
+      <p>Proteine: {{ meal.macro.countProteins}} g</p>
+      <p>Kalorien: {{ calculateCalories(meal.macro) }} kcal</p>
+      <button @click="onDelete(meal)" >Löschen</button>
+      <button @click="onEdit(meal)" >Bearbeiten</button>
+      <button @click="onToggleFavorite(meal)" > {{ meal.favorite ? "⭐" : "☆" }}</button>
+    </li>
   </ul>
 </div>
 </template>
