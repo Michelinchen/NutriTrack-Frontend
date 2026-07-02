@@ -6,6 +6,7 @@ import {getAllMeals, createMeal, deleteMeal, updateMeal} from "@/services/mealSe
 const meals = ref<MealEntry[]>([])
 const isLoading = ref(true)
 const errorMessage = ref<string | null>(null)
+const showOnlyFavorites= ref(false)
 
 // Form-State
 const newName= ref("")
@@ -15,10 +16,13 @@ const newProteins = ref(0)
 const editingMealId = ref<number | null>(null)
 const searchText = ref("")
 const filteredMeals = computed(() =>
-  meals.value.filter(meal =>
-    meal.name.toLowerCase().includes(searchText.value.toLowerCase())
-  )
+  meals.value.filter(meal => {
+    const matchesSearch = meal.name.toLowerCase().includes(searchText.value.toLowerCase())
+    const matchesFavorite = !showOnlyFavorites.value || meal.favorite
+    return matchesSearch && matchesFavorite
+  })
 )
+
 async function loadMeals(){
   isLoading.value = true
   try {
@@ -118,6 +122,10 @@ onMounted(loadMeals)
             @click="resetForm">
       Abbrechen
     </button>
+    <label>
+      <input type="checkbox"  v-model="showOnlyFavorites" />
+      Nur Favoriten anzeigen
+    </label>
   </form>
 
   <input v-model="searchText" placeholder="Suchen..." />
