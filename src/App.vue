@@ -1,19 +1,42 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import { useAuth0 } from '@auth0/auth0-vue'
+
+const { isAuthenticated, user, loginWithRedirect, logout: auth0Logout, isLoading } = useAuth0()
+const login = () => loginWithRedirect()
+const doLogout = () => auth0Logout({ logoutParams: {returnTo: window.location.origin} })
+
 </script>
 
 <template>
   <header>
+    <div v-if="isLoading">Lade...</div>
+
+    <div v-else-if="isAuthenticated && user">
+      <p>Logged in as {{ user.email }}</p>
+
+      <h1>User Profile</h1>
+
+      <button @click="doLogout">Logout</button>
+    </div>
+
+    <div v-else>
+      <button @click="login">Login</button>
+    </div>
 
     <div class="wrapper">
-
       <nav>
         <RouterLink to="/">Home</RouterLink>
       </nav>
     </div>
   </header>
 
-  <RouterView />
+  <div v-if="isAuthenticated">
+    <RouterView />
+  </div>
+  <div v-else>
+    <p>Bitte einloggen, um deine Mahlzeiten zu sehen.</p>
+  </div>
 </template>
 
 <style scoped>

@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import {ref, onMounted, computed} from "vue";
+import {ref, onMounted, computed, watch} from "vue";
 import type {Macronutrient, MealEntry} from "@/types/meal";
 import {getAllMeals, createMeal, deleteMeal, updateMeal} from "@/services/mealService";
+import {useAuth0} from "@auth0/auth0-vue";
 
 const meals = ref<MealEntry[]>([])
 const isLoading = ref(true)
 const errorMessage = ref<string | null>(null)
 const showOnlyFavorites= ref(false)
-
+const { user } = useAuth0()
 // Form-State
 const newName= ref("")
 const newCarbs = ref(0)
@@ -24,9 +25,10 @@ const filteredMeals = computed(() =>
 )
 
 async function loadMeals(){
+  if (!user.value?.email) return
   isLoading.value = true
   try {
-    meals.value = await getAllMeals()
+    meals.value = await getAllMeals(user.value?.email)
   } catch (error) {
     errorMessage.value = "Error while loading meals."
     console.error(error)
@@ -47,9 +49,9 @@ async function submitForm() {
       }
     }
     if (editingMealId.value !== null) {
-      await updateMeal(editingMealId.value, mealData)
+      await updateMeal(editingMealId.value, mealData, user.value?.email)
     } else {
-      await createMeal(mealData)
+      await createMeal(mealData, user.value?.email)
     }
     resetForm()
     await loadMeals()
@@ -63,7 +65,7 @@ async function onDelete(meal: MealEntry){
   if(!meal.id) return
   if(!confirm("Wirklich löschen?")) return
   try {
-    await deleteMeal(meal.id)
+    await deleteMeal(meal.id, user.value?.email)
     await loadMeals()
   } catch (error) {
     errorMessage.value = "Fehler beim Löschen."
@@ -90,7 +92,7 @@ function resetForm(){
 async function onToggleFavorite(meal: MealEntry){
   if(!meal.id) return
   try {
-    await updateMeal(meal.id, {...meal, favorite: !meal.favorite})
+    await updateMeal(meal.id, {...meal, favorite: !meal.favorite}, user.value?.email)
     await loadMeals()
   } catch (error) {
     errorMessage.value = "Fehler beim Aktualisieren des Favoriten-Status."
@@ -101,7 +103,11 @@ function calculateCalories(macro: Macronutrient): number{
   return macro.countFat * 9 + macro.countProteins * 4 + macro.countCarbs * 4
 }
 
-onMounted(loadMeals)
+watch(user, () => {
+  if (user.value?.email) {
+    loadMeals()
+  }
+}, { immediate: true })
 </script>
 
 <template>
