@@ -1,54 +1,90 @@
-# NutriTrack-Frontend
+# NutriTrack – Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+Browserbasierte Single-Page-Application zur Erfassung und Auswertung der täglichen Kalorienzufuhr. Nutzer melden sich per Auth0 an, legen Mahlzeiten mit Makronährstoffen an und sehen automatisch die berechneten Kalorien. Jeder Nutzer sieht nur seine eigenen Daten.
 
-## Recommended IDE Setup
+Dieses Repository enthält das **Frontend**. Das Backend (REST-API) liegt unter [NutriTrack](https://github.com/Michelinchen/NutriTrack).
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Live-Frontend:** https://nutritrack-frontend-q0wc.onrender.com
+- **Live-Backend:** https://nutritrack-1-gqy2.onrender.com
+- Modul: Webtechnologien · HTW Berlin · Prof. Dr. Arif Wider
 
-## Recommended Browser Setup
+## Autor
+- Michael Kecker – Matrikelnummer: 600971
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Tech-Stack
+- **Vue 3** mit **Composition API** (`<script setup>`)
+- **TypeScript**
+- **Vite** (Build & Dev-Server)
+- **Axios** (HTTP-Kommunikation mit dem Backend)
+- **Auth0** (`@auth0/auth0-vue`) – Login / Multi-User
+- **Bootstrap 5** (Styling)
+- **Vue Router**
+- **Vitest** + **@vue/test-utils** (Tests)
 
-## Type Support for `.vue` Imports in TS
+## Funktionen (Use Cases)
+1. Mahlzeit hinzufügen
+2. Mahlzeit löschen
+3. Mahlzeit bearbeiten
+4. Suchfunktion (Live-Filter nach Name)
+5. Favoriten markieren
+6. Favoriten anzeigen (Filter)
+7. Multi-User via Auth0 (Trennung über `owner`)
+8. Gesamtkalorien-Anzeige der angezeigten Mahlzeiten
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## Projektstruktur
+```
+src/
+├─ components/MealList.vue     # Hauptkomponente: Formular + Liste + Filter
+├─ services/mealService.ts     # Axios-Aufrufe an die Backend-API
+├─ types/meal.ts               # MealEntry & Macronutrient (TypeScript-Typen)
+├─ views/HomeView.vue          # rendert MealList
+├─ App.vue                     # Navbar, Login/Logout, RouterView
+└─ main.ts                     # App-Bootstrap, Auth0- & Bootstrap-Einbindung
+```
 
-## Customize configuration
+## Lokale Entwicklung
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### Voraussetzungen
+- Node.js (siehe `engines` in `package.json`, empfohlen ≥ 22.12)
 
-## Project Setup
-
-```sh
+### Installation
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Umgebungsvariablen
+Konfiguriert über `.env.development` (lokal) bzw. `.env.production` (Deploy):
 
-```sh
+```bash
+VITE_API_BASE_URL=http://localhost:8080        # URL des Backends
+VITE_AUTH0_DOMAIN=<dein-auth0-tenant>.auth0.com
+VITE_AUTH0_CLIENT_ID=<deine-auth0-client-id>
+```
+> Die Auth0-SPA-Client-ID ist öffentlich (sie wird ohnehin im Browser ausgeliefert) und stellt kein Geheimnis dar.
+
+### Starten
+```bash
 npm run dev
 ```
+Läuft standardmäßig auf `http://localhost:5173`.
 
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
+### Produktions-Build
+```bash
+npm run build     # Ausgabe nach dist/
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
+## Tests
+```bash
 npm run test:unit
 ```
+Komponententests (`src/components/__tests__/MealList.spec.ts`) mit **Vitest**. `axios` und `@auth0/auth0-vue` werden gemockt; asynchrones Laden wird mit `flushPromises()` abgewartet.
 
-### Lint with [ESLint](https://eslint.org/)
+## CI/CD
+Bei jedem Push auf `main` führt **GitHub Actions** (`.github/workflows/npm.yml`) automatisch `npm ci` und die Tests aus.
 
-```sh
-npm run lint
-```
+## Deployment
+Deployment als **Static Site** auf [Render](https://render.com):
+- Build Command: `npm install; npm run build`
+- Publish Directory: `dist`
+
+Die Auth0 *Allowed Callback / Logout / Web Origin URLs* müssen die Live-Frontend-URL enthalten, damit der Login in Produktion funktioniert.
