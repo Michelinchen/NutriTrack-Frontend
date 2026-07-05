@@ -111,43 +111,46 @@ watch(user, () => {
 </script>
 
 <template>
-<div>
-  <h2>Meine Mahlzeiten</h2>
+<div class="container mt-4">
+  <h2 class="mb-3 text-success">Meine Mahlzeiten</h2>
 
-  <form @submit.prevent="submitForm">
-    <h3>Neue Mahlzeit hinzufügen</h3>
-    <input v-model="newName" placeholder="Name" required />
-    <input v-model.number="newCarbs" type="number" placeholder="Kohlenhydrate (g)" />
-    <input v-model.number="newFat" type="number" placeholder="Fett (g)" />
-    <input v-model.number="newProteins" type="number" placeholder="Proteine (g)" />
-    <button type="submit">
-      {{editingMealId !== null ? "Aktualisieren" : "Speichern"}}
-    </button>
-    <button v-if="editingMealId !== null"
-            type="button"
-            @click="resetForm">
-      Abbrechen
-    </button>
-    <label>
-      <input type="checkbox"  v-model="showOnlyFavorites" />
+  <form @submit.prevent="submitForm" class="card card-body mb-4">
+    <h3 class="h5">Neue Mahlzeit hinzufügen</h3>
+    <input v-model="newName" placeholder="Name" required class="form-control mb-2" />
+    <input v-model.number="newCarbs" type="number" placeholder="Kohlenhydrate (g)" class="form-control mb-2" />
+    <input v-model.number="newFat" type="number" placeholder="Fett (g)" class="form-control mb-2" />
+    <input v-model.number="newProteins" type="number" placeholder="Proteine (g)" class="form-control mb-2" />
+    <div class="mb-2">
+      <button type="submit" class="btn btn-success me-2">
+        {{editingMealId !== null ? "Aktualisieren" : "Speichern"}}
+      </button>
+      <button v-if="editingMealId !== null"
+              type="button"
+              class="btn btn-secondary"
+              @click="resetForm">
+        Abbrechen
+      </button>
+    </div>
+    <label class="form-check">
+      <input type="checkbox" class="form-check-input me-1" v-model="showOnlyFavorites" />
       Nur Favoriten anzeigen
     </label>
   </form>
 
-  <input v-model="searchText" placeholder="Suchen..." />
+  <input v-model="searchText" placeholder="Suchen..." class="form-control mb-3" />
 
   <p v-if="isLoading">Lade Mahlzeiten...</p>
-  <p v-else-if="errorMessage">{{ errorMessage }}</p>
-  <ul v-else>
-    <li v-for="meal in filteredMeals" :key="meal.id ?? meal.name">
-      <h3>{{ meal.name}}</h3>
-      <p>Kohlenhydrate: {{ meal.macro.countCarbs}} g</p>
-      <p>Fette: {{ meal.macro.countFat}} g</p>
-      <p>Proteine: {{ meal.macro.countProteins}} g</p>
-      <p>Kalorien: {{ calculateCalories(meal.macro) }} kcal</p>
-      <button @click="onDelete(meal)" >Löschen</button>
-      <button @click="onEdit(meal)" >Bearbeiten</button>
-      <button @click="onToggleFavorite(meal)" > {{ meal.favorite ? "⭐" : "☆" }}</button>
+  <p v-else-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</p>
+  <ul v-else class="list-group">
+    <li v-for="meal in filteredMeals" :key="meal.id ?? meal.name" class="list-group-item">
+      <h3 class="h5">{{ meal.name}}</h3>
+      <p class="mb-1">Kohlenhydrate: {{ meal.macro.countCarbs}} g</p>
+      <p class="mb-1">Fette: {{ meal.macro.countFat}} g</p>
+      <p class="mb-1">Proteine: {{ meal.macro.countProteins}} g</p>
+      <p class="mb-2">Kalorien: <span class="badge bg-success">{{ calculateCalories(meal.macro) }} kcal</span></p>
+      <button @click="onDelete(meal)" class="btn btn-sm btn-outline-danger me-2">Löschen</button>
+      <button @click="onEdit(meal)" class="btn btn-sm btn-outline-primary me-2">Bearbeiten</button>
+      <button @click="onToggleFavorite(meal)" class="btn btn-sm btn-outline-warning"> {{ meal.favorite ? "⭐" : "☆" }}</button>
     </li>
   </ul>
 </div>

@@ -9,34 +9,29 @@ const doLogout = () => auth0Logout({ logoutParams: {returnTo: window.location.or
 </script>
 
 <template>
-  <header>
-    <div v-if="isLoading">Lade...</div>
-
-    <div v-else-if="isAuthenticated && user">
-      <p>Logged in as {{ user.email }}</p>
-
-      <h1>User Profile</h1>
-
-      <button @click="doLogout">Logout</button>
+  <header class="navbar navbar-expand navbar-dark bg-success px-3">
+    <span class="navbar-brand mb-0 h1">🥗 NutriTrack</span>
+    <div class="navbar-nav me-auto">
+      <RouterLink to="/" class="nav-link">Home</RouterLink>
     </div>
-
-    <div v-else>
-      <button @click="login">Login</button>
-    </div>
-
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
+    <div class="d-flex align-items-center">
+      <span v-if="isLoading" class="text-white me-2">Lade...</span>
+      <template v-else-if="isAuthenticated && user">
+        <span class="me-3 text-white">{{ user.email }}</span>
+        <button @click="doLogout" class="btn btn-light btn-sm">Logout</button>
+      </template>
+      <button v-else @click="login" class="btn btn-light btn-sm">Login</button>
     </div>
   </header>
 
-  <div v-if="isAuthenticated">
-    <RouterView />
-  </div>
-  <div v-else>
-    <p>Bitte einloggen, um deine Mahlzeiten zu sehen.</p>
-  </div>
+  <main class="container my-4">
+    <div v-if="isAuthenticated">
+      <RouterView />
+    </div>
+    <div v-else class="alert alert-info">
+      Bitte einloggen, um deine Mahlzeiten zu sehen.
+    </div>
+  </main>
 </template>
 
 <style scoped>
