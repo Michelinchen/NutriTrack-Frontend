@@ -23,6 +23,9 @@ const filteredMeals = computed(() =>
     return matchesSearch && matchesFavorite
   })
 )
+const totalCalories = computed(() =>
+  filteredMeals.value.reduce((summe, meal) => summe + calculateCalories(meal.macro), 0)
+)
 
 async function loadMeals(){
   if (!user.value?.email) return
@@ -138,7 +141,7 @@ watch(user, () => {
   </form>
 
   <input v-model="searchText" placeholder="Suchen..." class="form-control mb-3" />
-
+  <p class="fw-bold">Gesamt (angezeigt): <span class="badge bg-success">{{ totalCalories }} kcal</span></p>
   <p v-if="isLoading">Lade Mahlzeiten...</p>
   <p v-else-if="errorMessage" class="alert alert-danger">{{ errorMessage }}</p>
   <ul v-else class="list-group">
