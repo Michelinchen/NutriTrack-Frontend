@@ -119,9 +119,13 @@ watch(user, () => {
 
   <form @submit.prevent="submitForm" class="card card-body mb-4">
     <h3 class="h5">Neue Mahlzeit hinzufügen</h3>
-    <input v-model="newName" placeholder="Name" required class="form-control mb-2" />
-    <input v-model.number="newCarbs" type="number" placeholder="Kohlenhydrate (g)" class="form-control mb-2" />
+    <label class="form-label mb-1">Name</label>
+    <input v-model="newName" placeholder="Mahlzeit" required class="form-control mb-2" />
+    <label class="form-label mb-1">Kohlenhydrate (g)</label>
+    <input v-model.number="newCarbs" type="number"  class="form-control mb-2" />
+    <label class="form-label mb-1">Fett (g)</label>
     <input v-model.number="newFat" type="number" placeholder="Fett (g)" class="form-control mb-2" />
+    <label class="form-label mb-1">Proteine (g)</label>
     <input v-model.number="newProteins" type="number" placeholder="Proteine (g)" class="form-control mb-2" />
     <div class="mb-2">
       <button type="submit" class="btn btn-success me-2">
